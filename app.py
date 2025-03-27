@@ -42,6 +42,44 @@ def accept_station():
     return redirect(url_for('verify', continent=continent, country=country, 
                           last_updated=last_updated, offset=offset + 1))
 
+@app.route('/edit_station', methods=['POST'])
+def edit_station():
+    icao = request.form.get('icao')
+    callsign = request.form.get('callsign')
+    action = request.form.get('action')
+    
+    # Get the redirect parameters
+    continent = request.form.get('continent')
+    country = request.form.get('country')
+    last_updated = request.form.get('last_updated')
+    offset = int(request.form.get('offset', 0))
+    
+    with get_writer_connection() as conn:
+        cursor = conn.cursor()
+        
+        if action == 'save':
+            # Update the station with new values
+            cursor.execute(
+                """UPDATE stations 
+                   SET callsign_normal = %s, name = %s, source = 'HUMAN'
+                   WHERE icao = %s AND callsign = %s AND source = 'AI'""",
+                (request.form.get('callsign_normal'), request.form.get('name'), icao, callsign)
+            )
+        elif action == 'delete':
+            # Set callsign_normal and name to NULL, mark as human-verified
+            cursor.execute(
+                """UPDATE stations 
+                   SET callsign_normal = NULL, name = NULL, source = 'HUMAN'
+                   WHERE icao = %s AND callsign = %s AND source = 'AI'""",
+                (icao, callsign)
+            )
+        
+        conn.commit()
+    
+    # Redirect to the next station
+    return redirect(url_for('verify', continent=continent, country=country, 
+                          last_updated=last_updated, offset=offset + 1))
+
 @app.route('/verify')
 def verify():
     continent = request.args.get('continent')
@@ -77,7 +115,7 @@ def verify():
         
         cursor.execute(query, params)
         stations = cursor.fetchall()
-
+        
         pprint(stations[0])
         
         if not stations or offset >= len(stations):
