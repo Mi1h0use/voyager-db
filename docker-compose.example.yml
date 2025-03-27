@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=localhost
+      - DB_USER=dbuser
+      - DB_USER_RO=dbuser_ro
+      - DB_PASSWORD=your_password_here
+      - DB_NAME=your_database
+    restart: unless-stopped
