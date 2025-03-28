@@ -210,7 +210,7 @@ def verify():
             query += " AND s.last_updated >= %s"
             params.append(last_updated)
             
-        query += " ORDER BY s.callsign_normal"
+        query += " ORDER BY RAND()"
         
         cursor.execute(query, params)
         stations = cursor.fetchall()
