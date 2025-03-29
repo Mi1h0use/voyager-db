@@ -81,10 +81,10 @@
                 <form action="/edit_station" method="post">
                     <div class="modal-body">
                         <input type="hidden" name="icao" value="{{ station.icao }}">
-                        <input type="hidden" name="callsign" value="{{ station.callsign }}">
-                        <input type="hidden" name="continent" value="{{ continent }}">
-                        <input type="hidden" name="country" value="{{ country }}">
-                        <input type="hidden" name="last_updated" value="{{ last_updated }}">
+                        <input type="hidden" name="current_callsign" value="{{ station.callsign_normal }}">
+                        <input type="hidden" name="continent" value="{{ continent or '' }}">
+                        <input type="hidden" name="country" value="{{ country or '' }}">
+                        <input type="hidden" name="last_updated" value="{{ last_updated or '' }}">
                         
                         <div class="mb-3">
                             <label for="callsign_normal" class="form-label">Callsign</label>

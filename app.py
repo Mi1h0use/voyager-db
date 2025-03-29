@@ -79,26 +79,27 @@ def accept_station():
 @requires_permission('EDIT_STATIONS')
 def edit_station():
     icao = request.form.get('icao')
-    callsign = request.form.get('callsign')
+    current_callsign = request.form.get('current_callsign')
     action = request.form.get('action')
     
     # Get the redirect parameters with default empty strings
     continent = request.form.get('continent') or ""
     country = request.form.get('country') or ""
     last_updated = request.form.get('last_updated') or ""
-    offset = int(request.form.get('offset', 0))
+
+
     
     with get_writer_connection() as conn:
         cursor = conn.cursor(dictionary=True)
         
         # Get the station ID and current state
         cursor.execute(
-            "SELECT id FROM stations WHERE icao = %s AND callsign = %s AND source = 'AI'",
-            (icao, callsign)
+            "SELECT id FROM stations WHERE icao = %s AND callsign_normal = %s AND source = 'AI'",
+            (icao, current_callsign)
         )
         result = cursor.fetchone()
         if not result:
-            return jsonify({'message': 'Station not found or already processed'}), 400
+            return render_template('error.html', message="Station not found or already processed"), 400
             
         station_id = result['id']
         old_val = get_station_json(cursor, station_id)
@@ -125,7 +126,7 @@ def edit_station():
         conn.commit()
     
     # Redirect to the next station
-    return redirect(url_for('verify', continent=continent, country=country, last_updated=last_updated, offset=offset))
+    return redirect(url_for('verify', continent=continent, country=country, last_updated=last_updated))
 
 @app.route('/verify')
 @requires_auth
