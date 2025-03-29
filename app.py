@@ -23,6 +23,7 @@ def get_countries(continent):
 
 @app.route('/accept_station', methods=['POST'])
 @requires_auth
+@requires_permission('EDIT_STATIONS')
 def accept_station():
     icao = request.form.get('icao')
     callsign = request.form.get('callsign_normal')
@@ -68,6 +69,7 @@ def accept_station():
 
 @app.route('/edit_station', methods=['POST'])
 @requires_auth
+@requires_permission('EDIT_STATIONS')
 def edit_station():
     icao = request.form.get('icao')
     callsign = request.form.get('callsign')
@@ -120,6 +122,7 @@ def edit_station():
 
 @app.route('/verify')
 @requires_auth
+@requires_permission('EDIT_STATIONS')
 def verify():
     continent = request.args.get('continent')
     country = request.args.get('country')

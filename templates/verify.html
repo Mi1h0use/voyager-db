@@ -35,11 +35,12 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="mb-0">{{ station.icao }} - {{ station.airport_name }}</h3>
-                            <small class="text-muted">{{ user_contributions }} <i class="fa-solid fa-clipboard-check"></i></small>
+                            <a href="/" class="btn"><i class="fa-solid fa-x" title="close"></i></a>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
+                            <small class="text-muted float-end">{{ user_contributions }} <i class="fa-solid fa-clipboard-check" title="user contributions"></i></small>
                             Please verify this is the correct <strong>{{ station.type }}</strong> controller for <strong>{{ station.icao }}</strong>:<br>
                             <strong>Callsign:</strong> <span class="bg-yellow" data-bs-toggle="tooltip" data-bs-placement="right" title="This callsign is confirmed to be used on VATSIM by {{ station_name }}"> &nbsp;{{ station.callsign_normal }}&nbsp; </span><br>
                             <strong>Station Name:</strong> {{ station.name }}<br>

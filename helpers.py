@@ -63,6 +63,21 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+def has_permission(conn, user_id, permission):
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM permissions WHERE user_id = %s AND permission = %s", (user_id, permission))
+    return cursor.fetchone()[0] > 0
+
+def requires_permission(permission):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if not has_permission(get_reader_connection(), g.user_id, permission):
+                return jsonify({'message': 'You do not have permission to perform this action'}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
 def get_skyvector_url(conn, icao):
     cursor = conn.cursor()
     cursor.execute("SELECT url FROM skyvector WHERE icao = %s",(icao,))
