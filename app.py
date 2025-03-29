@@ -2,68 +2,11 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, m
 from functools import wraps
 from database import get_reader_connection, get_writer_connection
 from pprint import pprint
-import bcrypt
-import json
+from helpers import *
 
 app = Flask(__name__)
 
-def check_auth(username, password):
-    with get_reader_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(
-            "SELECT * FROM users WHERE username = %s",
-            (username,)
-        )
-        user = cursor.fetchone()
-        if user is None:
-            return False
-        
-        # Convert password to bytes and compare with stored hash
-        if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-            return user
-        return False
 
-def authenticate():
-    response = make_response('Could not verify your access level for that URL.\n'
-        'You have to login with proper credentials', 401)
-    response.headers['WWW-Authenticate'] = 'Basic realm="Login Required"'
-    return response
-
-def hash_password(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-def get_station_json(cursor, station_id):
-    cursor.execute("""
-        SELECT id, callsign_normal, name, authoritative, type, source
-        FROM stations
-        WHERE id = %s
-    """, (station_id,))
-    row = cursor.fetchone()
-    return row
-
-def log_station_change(conn, station_id, old_val, new_val, user_id):
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO station_logs (user_id, station_id, old_val, new_val) VALUES (%s, %s, %s, %s)",
-        (user_id, station_id, json.dumps(old_val), json.dumps(new_val))
-    )
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth:
-            return authenticate()
-            
-        user = check_auth(auth.username, auth.password)
-        if not user:
-            return authenticate()
-            
-        # Store user info in Flask's g object
-        g.username = auth.username
-        g.user_id = user['id']
-        return f(*args, **kwargs)
-    return decorated
 @app.route('/')
 @requires_auth
 def index():
@@ -88,7 +31,6 @@ def accept_station():
     continent = request.form.get('continent') or ""
     country = request.form.get('country') or ""
     last_updated = request.form.get('last_updated') or ""
-    offset = int(request.form.get('offset', 0))
     
     with get_writer_connection() as conn:
         cursor = conn.cursor(dictionary=True)
@@ -122,8 +64,7 @@ def accept_station():
 
     
     # Redirect to the next station
-    return redirect(url_for('verify', continent=continent, country=country, 
-                          last_updated=last_updated, offset=offset))
+    return redirect(url_for('verify', continent=continent, country=country, last_updated=last_updated))
 
 @app.route('/edit_station', methods=['POST'])
 @requires_auth
@@ -175,8 +116,7 @@ def edit_station():
         conn.commit()
     
     # Redirect to the next station
-    return redirect(url_for('verify', continent=continent, country=country, 
-                          last_updated=last_updated, offset=offset))
+    return redirect(url_for('verify', continent=continent, country=country, last_updated=last_updated, offset=offset))
 
 @app.route('/verify')
 @requires_auth
@@ -184,14 +124,12 @@ def verify():
     continent = request.args.get('continent')
     country = request.args.get('country')
     last_updated = request.args.get('last_updated')
-    offset = int(request.args.get('offset', 0))
     
     with get_reader_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        
         # Build the query dynamically based on filters
         query = """
-            SELECT s.*, a.name as airport_name, a.city, a.country, a.latitude, a.longitude
+            SELECT s.*, a.name as airport_name, a.city, a.iso_country, a.latitude, a.longitude
             FROM stations s
             JOIN airports a ON s.icao = a.icao
             WHERE s.source = 'AI'
@@ -207,21 +145,24 @@ def verify():
             params.append(country)
             
         if last_updated:
-            query += " AND s.last_updated >= %s"
+            query += " AND DATE(s.last_updated) = %s"
             params.append(last_updated)
             
-        query += " ORDER BY RAND()"
-        
+        # Add ORDER BY RAND() to get a random station
+        query += " ORDER BY RAND() LIMIT 1"
+            
         cursor.execute(query, params)
         stations = cursor.fetchall()
         
-        
-        if not stations or offset >= len(stations):
+        if not stations:
             return render_template('verify.html', has_stations=False)
             
-        return render_template('verify.html', has_stations=True, station=stations[offset], 
-                             total_stations=len(stations), current_index=offset,
-                             continent=continent, country=country, last_updated=last_updated)
+        station = stations[0]  # Get the single random station
+        skyvector_url = get_skyvector_url(conn, station['icao'])
+        user_contributions = get_user_contributions(conn, g.user_id)
+        station_name = get_callsign_name(conn, station['callsign_normal'])
+        return render_template('verify.html', station=station, has_stations=True,
+                             continent=continent, country=country, last_updated=last_updated, skyvector_url=skyvector_url, user_contributions=user_contributions, station_name=station_name)
 
 if __name__ == '__main__':
     app.run(debug=True)
