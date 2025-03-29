@@ -94,8 +94,9 @@
                 }
             });
 
-            $('#search-button-airport').click(function() {
-                const searchInput = $(this).prev('input');
+            // Function to handle airport search
+            function handleAirportSearch() {
+                const searchInput = $('#search-button-airport').prev('input');
                 const searchValue = searchInput.val();
                 
                 if (searchValue) {
@@ -103,16 +104,34 @@
                     url.searchParams.set('q', searchValue);
                     window.location.href = url.toString();
                 }
-            });
+            }
 
-            $('#search-button-station').click(function() {
-                const searchInput = $(this).prev('input');
+            // Function to handle station search
+            function handleStationSearch() {
+                const searchInput = $('#search-button-station').prev('input');
                 const searchValue = searchInput.val();
                 
                 if (searchValue) {
                     const url = new URL('/station/search', window.location.origin);
                     url.searchParams.set('q', searchValue);
                     window.location.href = url.toString();
+                }
+            }
+
+            // Handle button clicks
+            $('#search-button-airport').click(handleAirportSearch);
+            $('#search-button-station').click(handleStationSearch);
+
+            // Handle enter key in search inputs
+            $('#search-button-airport').prev('input').keypress(function(e) {
+                if (e.which === 13) { // Enter key
+                    handleAirportSearch();
+                }
+            });
+
+            $('#search-button-station').prev('input').keypress(function(e) {
+                if (e.which === 13) { // Enter key
+                    handleStationSearch();
                 }
             });
 
