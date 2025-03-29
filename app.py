@@ -5,6 +5,7 @@ from pprint import pprint
 from helpers import *
 from airport import airport_bp
 from station import station_bp
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -154,7 +155,7 @@ def verify():
             params.append(country)
             
         if last_updated:
-            query += " AND DATE(s.last_updated) = %s"
+            query += " AND DATE(s.last_updated) > %s"
             params.append(last_updated)
             
         # Add ORDER BY RAND() to get a random station
@@ -164,7 +165,7 @@ def verify():
         stations = cursor.fetchall()
         
         if not stations:
-            return render_template('verify.html', has_stations=False)
+            return render_template('error.html', message='No stations found matching your criteria')
             
         station = stations[0]  # Get the single random station
         skyvector_url = get_skyvector_url(conn, station['icao'])
