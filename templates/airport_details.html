@@ -2,9 +2,6 @@
 {% block content %}
 <div class="container mt-4">
     <h2>{{ airport.name }} ({{ icao }})</h2>
-    {% if airport.city %}
-    <p class="text-muted">{{ airport.city }}</p>
-    {% endif %}
     
     <h3>Stations</h3>
     <div class="table-responsive">

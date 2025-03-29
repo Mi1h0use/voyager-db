@@ -67,7 +67,8 @@ def details(icao):
         if not airport:
             return render_template('error.html', message="Airport not found")
             
-        return render_template('airport_details.html', 
+        return render_template('airport_details.html',
+                             title="Airport Details",
                              airport=airport,
                              stations=stations,
                              icao=icao.upper())

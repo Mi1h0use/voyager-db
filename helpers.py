@@ -84,9 +84,12 @@ def get_skyvector_url(conn, icao):
     result = cursor.fetchone()
     return ("https://skyvector.com" + result[0]) if result else None
 
-def get_user_contributions(conn, user_id):
+def get_user_contributions(conn, user_id=None):
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM station_logs WHERE user_id = %s", (user_id,))
+    if user_id:
+        cursor.execute("SELECT COUNT(*) FROM station_logs WHERE user_id = %s", (user_id,))
+    else:
+        cursor.execute("SELECT COUNT(*) FROM station_logs")
     return cursor.fetchone()[0]
 
 def get_callsign_name(conn, callsign):

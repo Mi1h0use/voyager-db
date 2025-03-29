@@ -61,4 +61,4 @@ def details(callsign):
         if not stations:
             return render_template('error.html', message="Station not found")
             
-        return render_template('station_details.html', stations=stations)
+        return render_template('station_details.html',title="Station Details", stations=stations)

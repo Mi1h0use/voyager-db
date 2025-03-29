@@ -170,9 +170,10 @@ def verify():
         station = stations[0]  # Get the single random station
         skyvector_url = get_skyvector_url(conn, station['icao'])
         user_contributions = get_user_contributions(conn, g.user_id)
+        total_contributions = get_user_contributions(conn)
         station_name = get_callsign_name(conn, station['callsign_normal'])
         return render_template('verify.html', station=station, has_stations=True,
-                             continent=continent, country=country, last_updated=last_updated, skyvector_url=skyvector_url, user_contributions=user_contributions, station_name=station_name)
+                             continent=continent, country=country, last_updated=last_updated, skyvector_url=skyvector_url, user_contributions=user_contributions, total_contributions=total_contributions, station_name=station_name)
 
 if __name__ == '__main__':
     app.run(debug=True)
