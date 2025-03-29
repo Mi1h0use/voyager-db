@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Station Search Results</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Callsign</th>
+                    <th>Name</th>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr onclick="window.location.href = '{{ url_for('station.details', callsign=result.callsign_normal) }}'">
+                    <td class="clickable">{{ result.callsign_normal }}</td>
+                    <td class="clickable">{{ result.name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

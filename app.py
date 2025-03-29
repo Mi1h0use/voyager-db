@@ -3,8 +3,14 @@ from functools import wraps
 from database import get_reader_connection, get_writer_connection
 from pprint import pprint
 from helpers import *
+from airport import airport_bp
+from station import station_bp
 
 app = Flask(__name__)
+
+# Register blueprints
+app.register_blueprint(airport_bp)
+app.register_blueprint(station_bp)
 
 
 @app.route('/')

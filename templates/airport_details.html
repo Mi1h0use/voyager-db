@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ airport.name }} ({{ icao }})</h2>
+    {% if airport.city %}
+    <p class="text-muted">{{ airport.city }}</p>
+    {% endif %}
+    
+    <h3>Stations</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Callsign</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for station in stations %}
+                <tr>
+                    <td>{{ station.callsign_normal }}</td>
+                    <td>{{ station.name }}</td>
+                    <td>{{ station.type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
