@@ -18,9 +18,10 @@ A Flask-based web application with database connectivity.
 
 ## Running the Application
 
-Run the application using:
+Run the application in debug mode using:
 ```
-python app.py
+python -m flask run app -p 8000 --debug 
 ```
+Deploy with docker-compose or a WSGI.
 
 The application will be available at http://localhost:8000
